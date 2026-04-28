@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
-import 'main_layout.dart';
+import 'medication_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final List<Medication> myMedications = [
+    Medication(name: 'Lisinopril', dosage: '20mg', time: '08:00 AM'),
+    Medication(name: 'Metformin', dosage: '500mg', time: '12:30 PM'),
+    Medication(name: 'Atorvastatin', dosage: '40mg', time: '06:00 PM'),
+  ];
+
+  @override
   Widget build(BuildContext context) {
+    int takenCount = myMedications.where((m) => m.isTaken).length;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -14,36 +27,22 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Nagłówek
-              const Text(
-                'PILL4U',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -1.0,
-                  color: Colors.black,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('PILL4U', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900)),
+                  Text('$takenCount/${myMedications.length}',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue)),
+                ],
               ),
-              const Text(
-                'TODAY OCT 24', // Docelowo podepniemy tu aktualną datę z systemu
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
+              const Text('TODAY OCT 24', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 24),
-
-              // Lista leków (scrollowana, gdy będzie ich więcej)
               Expanded(
-                child: ListView(
-                  children: [
-                    _buildPillCard('08:00 AM', 'Lisinopril', '20mg'),
-                    const SizedBox(height: 24),
-                    _buildPillCard('12:30 PM', 'Metformin', '500mg'),
-                    const SizedBox(height: 24),
-                    _buildPillCard('06:00 PM', 'Atorvastatin', '40mg'),
-                  ],
+                child: ListView.builder(
+                  itemCount: myMedications.length,
+                  itemBuilder: (context, index) {
+                    return _buildPillCard(myMedications[index]);
+                  },
                 ),
               ),
             ],
@@ -53,13 +52,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Funkcja generująca pojedynczy kafelek leku (żeby nie pisać tego samego 3 razy)
-  Widget _buildPillCard(String time, String name, String dose) {
+  Widget _buildPillCard(Medication med) {
+    Color cardColor = Colors.black;
+    if (med.isTaken) cardColor = Colors.green[700]!;
+    if (med.isMissed) cardColor = Colors.red[700]!;
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 2.0),
-        borderRadius: BorderRadius.zero, // Surowy, kwadratowy styl z makiety
+        border: Border.all(color: cardColor, width: med.isTaken || med.isMissed ? 4.0 : 2.0),
+        color: med.isTaken ? Colors.green[50] : (med.isMissed ? Colors.red[50] : Colors.white),
+        borderRadius: BorderRadius.circular(12), // Dodane zaokrąglenie
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,59 +71,43 @@ class HomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                time,
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.black),
-              ),
-              Container(
-                color: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: Text(
-                  dose,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              )
+              Text(med.time, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900)),
+              if (med.isTaken) const Icon(Icons.check_circle, color: Colors.green, size: 30),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            name,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
+          Text(med.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              // Przycisk "Wzięte" (Niebieski)
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    print('Wzięto $name');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          if (!med.isTaken && !med.isMissed)
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => setState(() => med.isTaken = true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Dodane zaokrąglenie
+                    ),
+                    child: const Icon(Icons.check, color: Colors.white),
                   ),
-                  child: const Icon(Icons.check_circle, color: Colors.white, size: 28),
                 ),
-              ),
-              const SizedBox(width: 16),
-              // Przycisk "Pominięte" (Czerwony)
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    print('Pominięto $name');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB71C1C), // Ciemny czerwony
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => setState(() => med.isMissed = true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[900],
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Dodane zaokrąglenie
+                    ),
+                    child: const Icon(Icons.close, color: Colors.white),
                   ),
-                  child: const Icon(Icons.cancel, color: Colors.white, size: 28),
                 ),
-              ),
-            ],
-          )
+              ],
+            )
+          else
+            TextButton(
+              onPressed: () => setState(() { med.isTaken = false; med.isMissed = false; }),
+              child: const Text('UNDO ACTION', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            ),
         ],
       ),
     );

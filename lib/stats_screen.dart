@@ -18,23 +18,24 @@ class StatsScreen extends StatelessWidget {
               const Text('Your weekly progress', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 32),
 
-              // Karta z wykresem kołowym
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(border: Border.all(width: 2)),
+                decoration: BoxDecoration(
+                  border: Border.all(width: 2),
+                  borderRadius: BorderRadius.circular(12), // Dodane zaokrąglenie
+                ),
                 child: Column(
                   children: [
                     const Text('WEEKLY ADHERENCE', style: TextStyle(fontWeight: FontWeight.w900)),
                     const SizedBox(height: 20),
-                    // Nasz Custom Chart
                     Stack(
                       alignment: Alignment.center,
                       children: [
                         SizedBox(
                           width: 150,
                           height: 150,
-                          child: CustomPaint(painter: ProgressPainter(0.85)), // 85%
+                          child: CustomPaint(painter: ProgressPainter(0.85)),
                         ),
                         const Column(
                           children: [
@@ -70,7 +71,10 @@ class StatsScreen extends StatelessWidget {
   Widget _buildHistoryCard(String date, String desc, bool success) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(border: Border.all(width: 2)),
+      decoration: BoxDecoration(
+        border: Border.all(width: 2),
+        borderRadius: BorderRadius.circular(12), // Dodane zaokrąglenie
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -83,7 +87,10 @@ class StatsScreen extends StatelessWidget {
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: success ? Colors.green[800] : Colors.red[800],
+            decoration: BoxDecoration(
+              color: success ? Colors.green[800] : Colors.red[800],
+              borderRadius: BorderRadius.circular(8), // Zaokrąglony status
+            ),
             child: const Text('SUCCESS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           )
         ],
@@ -92,7 +99,6 @@ class StatsScreen extends StatelessWidget {
   }
 }
 
-// Widget do rysowania kółka statystyk
 class ProgressPainter extends CustomPainter {
   final double progress;
   ProgressPainter(this.progress);

@@ -10,7 +10,7 @@ class AddMedicationScreen extends StatefulWidget {
 class _AddMedicationScreenState extends State<AddMedicationScreen> {
   TimeOfDay _selectedTime = const TimeOfDay(hour: 8, minute: 0);
   final List<String> _days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  final Set<int> _selectedDays = {0, 1, 2, 3, 4}; // Domyślnie dni robocze
+  final Set<int> _selectedDays = {0, 1, 2, 3, 4};
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,10 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                 const SizedBox(width: 16),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(border: Border.all(width: 2)),
+                  decoration: BoxDecoration(
+                    border: Border.all(width: 2),
+                    borderRadius: BorderRadius.circular(12), // Zaokrąglony dropdown
+                  ),
                   child: DropdownButton<String>(
                     value: 'mg',
                     underline: const SizedBox(),
@@ -68,7 +71,10 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(border: Border.all(width: 2)),
+                decoration: BoxDecoration(
+                  border: Border.all(width: 2),
+                  borderRadius: BorderRadius.circular(12), // Zaokrąglony czas
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -98,7 +104,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                     decoration: BoxDecoration(
                       color: isSelected ? Colors.black : Colors.white,
                       border: Border.all(width: 2),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12), // Zaokrąglone dni
                     ),
                     child: Center(
                       child: Text(
@@ -116,13 +122,12 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
 
             const SizedBox(height: 40),
 
-            // Przycisk zapisu (którego brakowało na makiecie, ale my go dajemy!)
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 minimumSize: const Size(double.infinity, 60),
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Zaokrąglony przycisk
               ),
               child: const Text('SAVE MEDICATION',
                   style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
@@ -144,8 +149,8 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
     return TextField(
       decoration: InputDecoration(
         hintText: hint,
-        border: const OutlineInputBorder(borderSide: BorderSide(width: 2)),
-        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(width: 2)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(width: 2)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(width: 2)),
       ),
     );
   }
