@@ -14,53 +14,74 @@ class StatsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('HISTORY & STATS', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
-              const Text('Your weekly progress', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('YOUR HISTORY',
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
               const SizedBox(height: 32),
 
+              // Wykres kołowy - Scentrowany kontener
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  border: Border.all(width: 2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 140,
+                        height: 140,
+                        child: CustomPaint(painter: ProgressPainter(0.85)),
+                      ),
+                      const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Progress', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                          Text('85%', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+              const Text('RECENT DAYS',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+              const SizedBox(height: 16),
+
+              // Poprawione paski postępu
+              _buildDayBar('Monday', 3, 3, Colors.green[700]!),
+              _buildDayBar('Tuesday', 2, 3, Colors.orange[700]!),
+              _buildDayBar('Wednesday (Today)', 1, 3, Colors.blue[700]!),
+
+              const SizedBox(height: 32),
+
+              // Dolna karta - Czyste wyrównanie
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   border: Border.all(width: 2),
-                  borderRadius: BorderRadius.circular(12), // Dodane zaokrąglenie
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('WEEKLY ADHERENCE', style: TextStyle(fontWeight: FontWeight.w900)),
+                    const Text('TODAY\'S DETAILS',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
                     const SizedBox(height: 20),
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SizedBox(
-                          width: 150,
-                          height: 150,
-                          child: CustomPaint(painter: ProgressPainter(0.85)),
-                        ),
-                        const Column(
-                          children: [
-                            Text('85%', style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900)),
-                            Text('GOAL: 90%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ],
+                    _buildPillRow('Ibuprofen', '08:00 AM', true),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Divider(thickness: 1.5, color: Colors.black12),
                     ),
-                    const SizedBox(height: 24),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _StatItem('TAKEN', '24', Colors.green),
-                        _StatItem('MISSED', '4', Colors.red),
-                        _StatItem('STREAK', '5 DAYS', Colors.black),
-                      ],
-                    ),
+                    _buildPillRow('Lisinopril', '02:00 PM', false),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
-              const Text('PAST 7 DAYS', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
-              const SizedBox(height: 16),
-              _buildHistoryCard('MONDAY, OCT 23', '4/4 Doses Taken', true),
             ],
           ),
         ),
@@ -68,33 +89,64 @@ class StatsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHistoryCard(String date, String desc, bool success) {
+  Widget _buildDayBar(String day, int taken, int total, Color color) {
+    double progress = taken / total;
     return Container(
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 12),
+      height: 54, // Wyższy pasek
+      width: double.infinity,
       decoration: BoxDecoration(
         border: Border.all(width: 2),
-        borderRadius: BorderRadius.circular(12), // Dodane zaokrąglenie
+        borderRadius: BorderRadius.circular(12),
+        color: color.withOpacity(0.1),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(date, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
-              Text(desc, style: const TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: success ? Colors.green[800] : Colors.red[800],
-              borderRadius: BorderRadius.circular(8), // Zaokrąglony status
+      child: ClipRRect( // Zapewnia, że pasek nie wychodzi poza rogi
+        borderRadius: BorderRadius.circular(9),
+        child: Stack(
+          alignment: Alignment.centerLeft,
+          children: [
+            FractionallySizedBox(
+              widthFactor: progress,
+              child: Container(color: color),
             ),
-            child: const Text('SUCCESS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          )
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(day,
+                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 15)),
+                  Text('$taken/$total',
+                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 15)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildPillRow(String name, String time, bool isTaken) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(isTaken ? 'TAKEN' : 'PENDING',
+                style: TextStyle(
+                    color: isTaken ? Colors.green[800] : Colors.orange[800],
+                    fontWeight: FontWeight.w900,
+                    fontSize: 11,
+                    letterSpacing: 0.5
+                )),
+            const SizedBox(height: 2),
+            Text(name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        Text(time, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+      ],
     );
   }
 }
@@ -105,38 +157,20 @@ class ProgressPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint backgroundPaint = Paint()
+    Paint bg = Paint()
       ..color = Colors.grey[200]!
-      ..strokeWidth = 15
+      ..strokeWidth = 14
       ..style = PaintingStyle.stroke;
 
-    Paint progressPaint = Paint()
-      ..color = Colors.green[800]!
-      ..strokeWidth = 15
+    Paint fg = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 14
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    canvas.drawCircle(size.center(Offset.zero), size.width / 2, backgroundPaint);
-    double arcAngle = 2 * pi * progress;
-    canvas.drawArc(Rect.fromLTRB(0, 0, size.width, size.height), -pi / 2, arcAngle, false, progressPaint);
+    canvas.drawCircle(size.center(Offset.zero), size.width / 2, bg);
+    canvas.drawArc(Rect.fromLTRB(0, 0, size.width, size.height), -pi / 2, 2 * pi * progress, false, fg);
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-class _StatItem extends StatelessWidget {
-  final String label, value;
-  final Color color;
-  const _StatItem(this.label, this.value, this.color);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900)),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-      ],
-    );
-  }
+  @override bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
